@@ -9,6 +9,14 @@
 import StoreKit
 import Observation
 
+
+enum PurchaseOutcome {
+    case success
+    case cancelled
+    case pending
+}
+
+
 @MainActor
 @Observable
 final class SubscriptionStore {
@@ -24,6 +32,33 @@ final class SubscriptionStore {
             : nil
         } catch {
             loadError = error.localizedDescription
+        }
+    }
+    
+    func purchase(_ product: Product) async throws -> PurchaseOutcome {
+        let result = try await product.purchase()
+        
+        switch result {
+        case .success(let verification):
+            let transaction = try checkVerified(verification)
+            
+            await transaction.finish()
+            return .success
+        case .userCancelled:
+            return .cancelled
+        case .pending:
+            return .pending
+        @unknown default:
+            return .cancelled
+        }
+    }
+    
+    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+        switch result {
+        case .unverified(_, let error):
+            throw error
+        case .verified(let value):
+            return value
         }
     }
 }

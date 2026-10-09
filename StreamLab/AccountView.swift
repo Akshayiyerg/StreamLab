@@ -11,6 +11,7 @@ import StoreKit
 struct AccountView: View {
     
     @Environment(SubscriptionStore.self) private var store
+    @State private var message: String?
     
     var body: some View {
         NavigationStack {
@@ -28,7 +29,25 @@ struct AccountView: View {
                                 Text("Intro: \(intro.period.value) \(intro.period.unit.localizedDescription), \(intro.displayPrice)")
                                     .foregroundStyle(.green)
                             }
+                            
+                            Button("Subscribe") {
+                                Task {
+                                    do {
+                                        let outcome = try await store.purchase(product)
+                                        message = "\(product.displayName): \(outcome)"
+                                    } catch {
+                                        message = "Failed: \(error.localizedDescription)"
+                                    }
+                                }
+                            }
+                            .buttonStyle(.borderedProminent)
                         }
+                    }
+                }
+                
+                if let message {
+                    Section("Last purchase") {
+                        Text(message)
                     }
                 }
                 
