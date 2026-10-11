@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct HomeView: View {
+    @Environment(SubscriptionStore.self) private var store
+    
     var body: some View {
         NavigationStack {
-            Text("Catalogue goes here")
+            Text(store.isSubscribed ? "Premium unlocked" : "Premium locked")
                 .navigationTitle("StreamLab")
         }
     }

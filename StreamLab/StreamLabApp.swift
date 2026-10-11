@@ -18,6 +18,7 @@ struct StreamLabApp: App {
                 .environment(store)
                 .task {
                     await store.loadProducts()
+                    await store.refreshEntitlements()
                 }
         }
     }

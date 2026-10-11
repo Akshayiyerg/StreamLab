@@ -23,6 +23,11 @@ final class SubscriptionStore {
     
     private(set) var products: [Product] = []
     private(set) var loadError: String?
+    private(set) var activeProductID: String?
+    
+    var isSubscribed: Bool {
+        activeProductID != nil
+    }
     
     func loadProducts() async {
         do {
@@ -35,13 +40,27 @@ final class SubscriptionStore {
         }
     }
     
+    func refreshEntitlements() async {
+        var active: String?
+        
+        for await result in Transaction.currentEntitlements {
+            guard let transaction = try? checkVerified(result) else { continue }
+            
+            if transaction.productType == .autoRenewable {
+                active = transaction.productID
+            }
+        }
+        
+        activeProductID = active
+    }
+    
     func purchase(_ product: Product) async throws -> PurchaseOutcome {
         let result = try await product.purchase()
         
         switch result {
         case .success(let verification):
             let transaction = try checkVerified(verification)
-            
+            await refreshEntitlements()
             await transaction.finish()
             return .success
         case .userCancelled:

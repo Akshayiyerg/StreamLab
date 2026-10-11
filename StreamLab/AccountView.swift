@@ -16,6 +16,14 @@ struct AccountView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section("Status") {
+                    if let activeID = store.activeProductID, let plan = store.products.first(where: {$0.id == activeID} ) {
+                        Label("Premium: \(plan.displayName)", systemImage: "checkmark.seal.fill")
+                            .foregroundStyle(.green)
+                    } else {
+                        Label("Free Plan", systemImage: "lock.fill")
+                    }
+                }
                 Section("Plans") {
                     ForEach(store.products) { product in
                         VStack(alignment: .leading, spacing: 4) {
@@ -41,6 +49,7 @@ struct AccountView: View {
                                 }
                             }
                             .buttonStyle(.borderedProminent)
+                            .disabled(store.activeProductID == product.id)
                         }
                     }
                 }
