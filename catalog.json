@@ -1,0 +1,47 @@
+[
+  {
+    "id": "big-buck-bunny",
+    "title": "Big Buck Bunny",
+    "synopsis": "A gentle giant rabbit takes on three bullying rodents in this open-source animated short.",
+    "category": "Animation",
+    "durationMinutes": 10,
+    "isPremium": false,
+    "streamURL": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+  },
+  {
+    "id": "hls-test-card",
+    "title": "HLS Test Card",
+    "synopsis": "Apple's reference stream for checking adaptive bitrate playback.",
+    "category": "Tech Demos",
+    "durationMinutes": 30,
+    "isPremium": false,
+    "streamURL": "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8"
+  },
+  {
+    "id": "tears-of-steel",
+    "title": "Tears of Steel",
+    "synopsis": "A group of scientists and soldiers try to save the world from destructive robots in this open sci-fi short.",
+    "category": "Sci-Fi",
+    "durationMinutes": 12,
+    "isPremium": true,
+    "streamURL": "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
+  },
+  {
+    "id": "dolby-vision-showcase",
+    "title": "Dolby Vision Showcase",
+    "synopsis": "Apple's sample stream with Dolby Vision video and Dolby Atmos audio.",
+    "category": "Tech Demos",
+    "durationMinutes": 5,
+    "isPremium": true,
+    "streamURL": "https://devstreaming-cdn.apple.com/videos/streaming/examples/adv_dv_atmos/main.m3u8"
+  },
+  {
+    "id": "advanced-hls-sample",
+    "title": "Advanced HLS Sample",
+    "synopsis": "Apple's advanced fragmented MP4 stream with multiple audio and subtitle tracks.",
+    "category": "Tech Demos",
+    "durationMinutes": 10,
+    "isPremium": true,
+    "streamURL": "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
+  }
+]
