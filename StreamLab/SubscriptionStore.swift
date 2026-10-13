@@ -29,6 +29,24 @@ final class SubscriptionStore {
         activeProductID != nil
     }
     
+    @ObservationIgnored private var updatesTask: Task<Void, Never>?
+    @ObservationIgnored private var statusTask: Task<Void, Never>?
+    
+    init() {
+        updatesTask = Task { [weak self] in
+            for await result in Transaction.updates {
+                await self?.handle(result)
+            }
+        }
+        
+        statusTask = Task { [weak self] in
+            
+            for await _ in Product.SubscriptionInfo.Status.updates {
+                await self?.refreshEntitlements()
+            }
+        }
+    }
+    
     func loadProducts() async {
         do {
             let loaded = try await Product.products(for: ProductID.all)
@@ -70,6 +88,15 @@ final class SubscriptionStore {
         @unknown default:
             return .cancelled
         }
+    }
+    
+    private func handle(_ result:VerificationResult<Transaction>) async {
+        guard let transaction = try? checkVerified(result) else { return }
+        
+        print("Transaction update:", transaction.productID, "revoked:", transaction.revocationDate != nil)
+        
+        await refreshEntitlements()
+        await transaction.finish()
     }
     
     private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
