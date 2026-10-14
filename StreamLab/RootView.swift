@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RootView: View {
     var body: some View {
@@ -23,4 +24,5 @@ struct RootView: View {
 #Preview {
     RootView()
         .environment(SubscriptionStore())
+        .modelContainer(for: CachedVideo.self, inMemory: true)
 }

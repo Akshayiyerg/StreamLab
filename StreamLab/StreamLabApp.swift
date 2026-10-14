@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct StreamLabApp: App {
@@ -21,5 +22,6 @@ struct StreamLabApp: App {
                     await store.refreshEntitlements()
                 }
         }
+        .modelContainer(for: CachedVideo.self)
     }
 }

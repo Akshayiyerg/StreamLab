@@ -6,15 +6,18 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     @Environment(SubscriptionStore.self) private var store
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \CachedVideo.sortIndex) private var videos: [CachedVideo]
     
-    @State private var videos: [Video] = []
+    
     @State private var isLoading = false
     @State private var errorMessage: String?
     
-    private let service = CatalogService()
+    private let repository = CatalogRepository()
     
     var body: some View {
         NavigationStack {
@@ -41,7 +44,7 @@ struct HomeView: View {
                     ProgressView()
                 } else if let errorMessage, videos.isEmpty {
                     ContentUnavailableView {
-                        Label("Ca't load catalogue", systemImage: "wifi.slash")
+                        Label("Can't load catalogue", systemImage: "wifi.slash")
                     } description: {
                         Text(errorMessage)
                     } actions: {
@@ -49,6 +52,15 @@ struct HomeView: View {
                             Task { await load() }
                         }
                     }
+                }
+            }
+            .safeAreaInset(edge: .top) {
+                if errorMessage != nil && !videos.isEmpty {
+                    Label("Offline · showing saved catalogue", systemImage: "wifi.slash")
+                        .font(.footnote)
+                        .padding(.vertical, 6)
+                        .frame(maxWidth: .infinity)
+                        .background(.yellow.opacity(0.3))
                 }
             }
             .navigationTitle("StreamLab")
@@ -67,7 +79,7 @@ struct HomeView: View {
         defer { isLoading = false}
              
         do {
-            videos = try await service.fetchCatalog()
+            try await repository.refresh(into: modelContext)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
