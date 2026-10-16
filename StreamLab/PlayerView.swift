@@ -18,25 +18,29 @@ struct PlayerView: View {
     
     
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            Color.black.ignoresSafeArea()
+        VStack(spacing: 0) {
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(width: 44, height: 44)
+                }
+                .accessibilityLabel("Close")
+                
+                Spacer()
+            }
+            .padding(.horizontal)
             
             if let player {
                 VideoPlayer(player: player)
-                    .ignoresSafeArea()
+            } else {
+                Spacer()
             }
-            
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.title)
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(.white)
-            }
-            .padding()
-            .accessibilityLabel("Close")
         }
+        .background(Color.black.ignoresSafeArea())
         .onAppear {
             try? AVAudioSession.sharedInstance().setCategory(.playback)
             let player = AVPlayer(url: url)
