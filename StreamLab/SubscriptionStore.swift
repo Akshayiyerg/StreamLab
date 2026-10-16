@@ -29,6 +29,10 @@ final class SubscriptionStore {
         activeProductID != nil
     }
     
+    func canWatch(isPremium: Bool) -> Bool {
+        !isPremium || isSubscribed
+    }
+    
     @ObservationIgnored private var updatesTask: Task<Void, Never>?
     @ObservationIgnored private var statusTask: Task<Void, Never>?
     

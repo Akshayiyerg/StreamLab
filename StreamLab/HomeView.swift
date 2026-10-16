@@ -22,22 +22,33 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             List(videos) { video in
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(video.title)
-                            .font(.headline)
-                        Text("\(video.category) · \(video.durationMinutes) min")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    Spacer()
-                    
-                    if video.isPremium && !store.isSubscribed {
-                        Image(systemName: "lock.fill")
-                            .foregroundStyle(.secondary)
+                NavigationLink(value: video) {
+                    HStack(spacing: 12) {
+                        PosterView(category: video.category)
+                            .frame(width: 64, height: 40)
+                            .clipShape(.rect(cornerRadius: 6))
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(video.title)
+                                .font(.headline)
+                            Text("\(video.category) · \(video.durationMinutes) min")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        if !store.canWatch(isPremium: video.isPremium) {
+                            Image(systemName: "lock.fill")
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
+                
+            }
+            .navigationDestination(for: CachedVideo.self) { video in
+                VideoDetailView(video: video)
+                
             }
             .overlay {
                 if isLoading && videos.isEmpty {
