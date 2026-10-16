@@ -29,7 +29,7 @@ struct PlayerView: View {
             Button {
                 dismiss()
             } label: {
-                Image(systemName: "xmark:circel.fill")
+                Image(systemName: "xmark.circle.fill")
                     .font(.title)
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(.white)
