@@ -7,6 +7,7 @@
 
 import SwiftUI
 import StoreKit
+import SwiftData
 
 struct AccountView: View {
     
@@ -17,8 +18,9 @@ struct AccountView: View {
         NavigationStack {
             List {
                 Section("Status") {
-                    if let activeID = store.activeProductID, let plan = store.products.first(where: {$0.id == activeID} ) {
-                        Label("Premium: \(plan.displayName)", systemImage: "checkmark.seal.fill")
+                    if let activeID = store.activeProductID {
+                        let planName = store.products.first(where: { $0.id == activeID})?.displayName ?? "Active"
+                        Label("Premium: \(planName)", systemImage: "checkmark.seal.fill")
                             .foregroundStyle(.green)
                     } else {
                         Label("Free Plan", systemImage: "lock.fill")
@@ -76,4 +78,5 @@ struct AccountView: View {
 #Preview {
     RootView()
         .environment(SubscriptionStore())
+        .modelContainer(for: CachedVideo.self, inMemory: true)
 }

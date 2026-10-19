@@ -13,7 +13,7 @@ enum CatalogError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .badResponse(let code):
-            return "The server returned an error (\(code)"
+            return "The server returned an error (\(code))."
         }
     }
 }

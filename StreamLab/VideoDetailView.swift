@@ -38,7 +38,7 @@ struct VideoDetailView: View {
                         showPlans = true
                     }
                 } label: {
-                    Label(canWatch ? "Play" : "Unlock with Premium", systemImage: canWatch ? "Play.fill" : "lock.fill")
+                    Label(canWatch ? "Play" : "Unlock with Premium", systemImage: canWatch ? "play.fill" : "lock.fill")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
