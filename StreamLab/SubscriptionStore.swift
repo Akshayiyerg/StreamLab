@@ -24,6 +24,7 @@ final class SubscriptionStore {
     private(set) var products: [Product] = []
     private(set) var loadError: String?
     private(set) var activeProductID: String?
+    private(set) var isEligibleForTrial = false
     
     var isSubscribed: Bool {
         activeProductID != nil
@@ -74,6 +75,17 @@ final class SubscriptionStore {
         }
         
         activeProductID = active
+        await refreshTrailEligibility()
+    }
+    
+    func refreshTrailEligibility() async {
+        guard let subscription = products.first?.subscription else { return }
+        isEligibleForTrial = await subscription.isEligibleForIntroOffer
+    }
+    
+    func restore() async throws {
+        try await AppStore.sync()
+        await refreshEntitlements()
     }
     
     func purchase(_ product: Product) async throws -> PurchaseOutcome {
