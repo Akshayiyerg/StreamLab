@@ -63,7 +63,7 @@ struct PaywallView: View {
                 .font(.largeTitle.bold())
             
             VStack(alignment: .leading, spacing: 8) {
-                Label("Every title in the catalogue", systemImage: "flim.stack")
+                Label("Every title in the catalogue", systemImage: "film.stack")
                 Label("New premium releases", systemImage: "sparkles")
                 Label("Cancel anytime", systemImage: "checkmark.circle")
             }

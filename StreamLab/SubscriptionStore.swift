@@ -75,10 +75,10 @@ final class SubscriptionStore {
         }
         
         activeProductID = active
-        await refreshTrailEligibility()
+        await refreshTrialEligibility()
     }
     
-    func refreshTrailEligibility() async {
+    func refreshTrialEligibility() async {
         guard let subscription = products.first?.subscription else { return }
         isEligibleForTrial = await subscription.isEligibleForIntroOffer
     }
