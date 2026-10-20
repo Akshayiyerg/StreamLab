@@ -90,7 +90,10 @@ final class SubscriptionStore {
     
     func purchase(_ product: Product) async throws -> PurchaseOutcome {
         let result = try await product.purchase()
-        
+        return try await process(result)
+    }
+    
+    func process(_ result: Product.PurchaseResult) async throws -> PurchaseOutcome {
         switch result {
         case .success(let verification):
             let transaction = try checkVerified(verification)

@@ -13,6 +13,8 @@ struct AccountView: View {
     
     @Environment(SubscriptionStore.self) private var store
     @State private var message: String?
+    @State private var showPaywall = false
+    @AppStorage(PaywallStyle.storageKey) private var paywallStyle = PaywallStyle.custom
     
     var body: some View {
         NavigationStack {
@@ -62,6 +64,19 @@ struct AccountView: View {
                     }
                 }
                 
+                Section("Developer options") {
+                    Picker("Paywall style", selection: $paywallStyle) {
+                        ForEach(PaywallStyle.allCases) {
+                            style in
+                            Text(style.title).tag(style)
+                        }
+                    }
+                    
+                    Button("Show paywall") {
+                        showPaywall = true
+                    }
+                }
+                
                 if let error = store.loadError {
                     Section {
                         Text(error)
@@ -70,6 +85,9 @@ struct AccountView: View {
                 }
             }
             .navigationTitle("Account")
+            .sheet(isPresented: $showPaywall) {
+                PaywallSheet()
+            }
         }
     }
 }

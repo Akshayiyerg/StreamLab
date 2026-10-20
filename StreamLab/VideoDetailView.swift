@@ -53,7 +53,7 @@ struct VideoDetailView: View {
             PlayerView(url: video.streamURL, isPremium: video.isPremium)
         }
         .sheet(isPresented: $showPlans) {
-            PaywallView()
+            PaywallSheet()
         }
         .onChange(of: store.isSubscribed) {
             if store.isSubscribed {
