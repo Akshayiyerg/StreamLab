@@ -50,7 +50,7 @@ struct AccountView: View {
                 subscriptionGroupID: store.subscriptionGroupID ?? ""
             )
             .offerCodeRedemption(isPresented: $showOfferCode)
-            .alert("Restore Purchase", isPresented: Binding(
+            .alert("Restore Purchases", isPresented: Binding(
                 get: { restoreMessage != nil },
                 set: { if !$0 { restoreMessage = nil } }
             )) {
@@ -73,11 +73,16 @@ struct AccountView: View {
                         .foregroundStyle(.secondary)
                 }
             } else if let details = store.details {
-                Label("Premium: \(store.planName(for: details.productID))", systemImage: "checkmark.seal.fill")
-                    .foregroundStyle(.green)
+                let isOnHold = details.state == .inBillingRetryPeriod
+                Label(
+                    isOnHold ? "Premium on hold: \(store.planName(for: details.productID))"
+                    : "Premium: \(store.planName(for: details.productID))",
+                    systemImage: isOnHold ? "pause.circle.fill" : "checkmark.seal.fill"
+                )
+                .foregroundStyle(isOnHold ? .orange : .green)
                 
-                if details.isFreeTrail {
-                    Label("Free trial", systemImage: "gift")
+                if details.isFreeTriall {
+                    Label(trialSummary(for: details), systemImage: "gift")
                 }
                 
                 if details.state == .inBillingRetryPeriod || details.state == .inGracePeriod {
@@ -111,7 +116,7 @@ struct AccountView: View {
                 Task { await restore() }
             }
             
-            Button("Redeem offer Code") {
+            Button("Redeem Offer Code") {
                 showOfferCode = true
             }
         }
@@ -127,10 +132,26 @@ struct AccountView: View {
         }
         
         if let next = details.nextProductID, next != details.productID {
-            return "Switches to \(store.planName(for: next)) on \(formatted)"
+            return "\(store.planName(for: details.productID)) until \(formatted), then changes to \(store.planName(for: next))"
         }
         
         return "Renews \(formatted)"
+    }
+    
+    private func trialSummary(for details: SubscriptionDetails) -> String {
+        guard let date = details.expirationDate else { return "Free trial" }
+        let end = date.formatted(date: .abbreviated, time: .omitted)
+        
+        guard details.willAutoRenew else {
+            return "Free trial ends \(end). You won't be charged."
+        }
+        
+        let nextID = details.nextProductID ?? details.productID
+        guard let next = store.products.first(where: { $0.id == nextID }) else {
+            return "Free trial ends \(end)"
+        }
+        
+        return "Free trial ends \(end), then \(next.pricePerPeriod)."
     }
     
     private func restore() async {
