@@ -25,14 +25,15 @@ struct AccountView: View {
                 subscriptionSection
                 manageSection
                 
+                #if DEBUG
                 Section("Developer options") {
                     Picker("Paywall style", selection: $paywallStyle) {
-                        ForEach(PaywallStyle.allCases) {
-                            style in
+                        ForEach(PaywallStyle.allCases) { style in
                             Text(style.title).tag(style)
                         }
                     }
                 }
+                #endif
                 
                 if let error = store.loadError {
                     Section {
@@ -73,26 +74,24 @@ struct AccountView: View {
                         .foregroundStyle(.secondary)
                 }
             } else if let details = store.details {
-                let isOnHold = details.state == .inBillingRetryPeriod
-                Label(
-                    isOnHold ? "Premium on hold: \(store.planName(for: details.productID))"
-                    : "Premium: \(store.planName(for: details.productID))",
-                    systemImage: isOnHold ? "pause.circle.fill" : "checkmark.seal.fill"
-                )
-                .foregroundStyle(isOnHold ? .orange : .green)
+                LabeledContent("Plan", value: store.planName(for: details.productID))
                 
-                if details.isFreeTriall {
-                    Label(trialSummary(for: details), systemImage: "gift")
+                LabeledContent("Status") {
+                    Text(statusText(for: details))
+                        .foregroundStyle(statusColor(for: details))
+                }
+                
+                if let date = details.expirationDate {
+                    LabeledContent(dateLabel(for: details), value: date.formatted(date: .abbreviated, time: .omitted))
+                }
+                
+                if let next = nextPlanText(for: details) {
+                    LabeledContent("Then", value: next)
                 }
                 
                 if details.state == .inBillingRetryPeriod || details.state == .inGracePeriod {
                     Label("There's a problem with your payment method. Update it to keep Premium.", systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
-                }
-                
-                if let date = details.expirationDate {
-                    Text(renewalText(for: details, date: date))
-                        .foregroundStyle(.secondary)
                 }
             } else {
                 Label("Free plan", systemImage: "lock.fill")
@@ -124,34 +123,36 @@ struct AccountView: View {
     
     // MARK: - Helpers
     
-    private func renewalText(for details: SubscriptionDetails, date: Date) -> String {
-        let formatted = date.formatted(date: .abbreviated, time: .shortened)
-        
-        guard details.willAutoRenew else {
-            return "Cancelled. Access ends \(formatted)"
+    private func statusText(for details: SubscriptionDetails) -> String {
+        switch details.state {
+        case .inBillingRetryPeriod: return "On hold"
+        case .inGracePeriod: return "Payment issue"
+        default: break
         }
         
-        if let next = details.nextProductID, next != details.productID {
-            return "\(store.planName(for: details.productID)) until \(formatted), then changes to \(store.planName(for: next))"
-        }
-        
-        return "Renews \(formatted)"
+        if !details.willAutoRenew { return "Cancelled" }
+        return details.isFreeTrial ? "Free trial" : "Active"
     }
     
-    private func trialSummary(for details: SubscriptionDetails) -> String {
-        guard let date = details.expirationDate else { return "Free trial" }
-        let end = date.formatted(date: .abbreviated, time: .omitted)
-        
-        guard details.willAutoRenew else {
-            return "Free trial ends \(end). You won't be charged."
+    private func statusColor(for details: SubscriptionDetails) -> Color {
+        if details.state == .inBillingRetryPeriod || details.state == .inGracePeriod {
+            return .orange
         }
+        return details.willAutoRenew ? .green : .secondary
+    }
+    
+    private func dateLabel(for details: SubscriptionDetails) -> String {
+        if !details.willAutoRenew { return "Access ends" }
+        return details.isFreeTrial ? "Trial ends" : "Renews"
+    }
+    
+    private func nextPlanText(for details: SubscriptionDetails) -> String? {
+        guard details.willAutoRenew else { return nil }
         
         let nextID = details.nextProductID ?? details.productID
-        guard let next = store.products.first(where: { $0.id == nextID }) else {
-            return "Free trial ends \(end)"
-        }
+        guard nextID != details.productID || details.isFreeTrial, let next = store.products.first(where: { $0.id == nextID }) else { return nil }
         
-        return "Free trial ends \(end), then \(next.pricePerPeriod)."
+        return "\(next.displayName), \(next.pricePerPeriod)"
     }
     
     private func restore() async {

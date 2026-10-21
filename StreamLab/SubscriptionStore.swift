@@ -16,7 +16,7 @@ struct SubscriptionDetails {
     let expirationDate: Date?
     let willAutoRenew: Bool
     let nextProductID: String?
-    let isFreeTriall: Bool
+    let isFreeTrial: Bool
 }
 
 enum PurchaseOutcome {
@@ -128,7 +128,7 @@ final class SubscriptionStore {
             expirationDate: transaction.expirationDate,
             willAutoRenew: renewalInfo.willAutoRenew,
             nextProductID: renewalInfo.autoRenewPreference,
-            isFreeTriall: transaction.offer?.paymentMode == .freeTrial
+            isFreeTrial: transaction.offer?.paymentMode == .freeTrial
         )
     }
     
