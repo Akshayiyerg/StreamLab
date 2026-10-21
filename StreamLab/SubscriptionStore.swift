@@ -10,6 +10,15 @@ import StoreKit
 import Observation
 
 
+struct SubscriptionDetails {
+    let productID: String
+    let state: Product.SubscriptionInfo.RenewalState
+    let expirationDate: Date?
+    let willAutoRenew: Bool
+    let nextProductID: String?
+    let isFreeTrail: Bool
+}
+
 enum PurchaseOutcome {
     case success
     case cancelled
@@ -26,8 +35,19 @@ final class SubscriptionStore {
     private(set) var activeProductID: String?
     private(set) var isEligibleForTrial = false
     
+    private(set) var details: SubscriptionDetails?
+    private(set) var hasLoadedEntitlements = false
+    
     var isSubscribed: Bool {
         activeProductID != nil
+    }
+    
+    var subscriptionGroupID: String? {
+        products.first?.subscription?.subscriptionGroupID
+    }
+    
+    func planName(for productID: String) -> String {
+        products.first { $0.id == productID }?.displayName ?? "Premium"
     }
     
     func canWatch(isPremium: Bool) -> Bool {
@@ -76,11 +96,40 @@ final class SubscriptionStore {
         
         activeProductID = active
         await refreshTrialEligibility()
+        
+        await refreshDetails()
+        hasLoadedEntitlements = true
     }
     
     func refreshTrialEligibility() async {
         guard let subscription = products.first?.subscription else { return }
         isEligibleForTrial = await subscription.isEligibleForIntroOffer
+    }
+    
+    func refreshDetails() async {
+        guard let subscription = products.first?.subscription,
+              let statuses = try? await subscription.status else {
+            details = nil
+            return
+        }
+        
+        let activeStates: [Product.SubscriptionInfo.RenewalState] = [.subscribed, .inGracePeriod, .inBillingRetryPeriod]
+        
+        guard let status = statuses.first(where: { activeStates.contains($0.state) }),
+              let transaction = try? checkVerified(status.transaction),
+              let renewalInfo = try? checkVerified(status.renewalInfo) else {
+            details = nil
+            return
+        }
+        
+        details = SubscriptionDetails(
+            productID: transaction.productID,
+            state: status.state,
+            expirationDate: transaction.expirationDate,
+            willAutoRenew: renewalInfo.willAutoRenew,
+            nextProductID: renewalInfo.autoRenewPreference,
+            isFreeTrail: transaction.offer?.paymentMode == .freeTrial
+        )
     }
     
     func restore() async throws {

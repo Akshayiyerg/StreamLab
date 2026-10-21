@@ -38,7 +38,7 @@ struct HomeView: View {
                         
                         Spacer()
                         
-                        if !store.canWatch(isPremium: video.isPremium) {
+                        if store.hasLoadedEntitlements && !store.canWatch(isPremium: video.isPremium) {
                             Image(systemName: "lock.fill")
                                 .foregroundStyle(.secondary)
                         }
