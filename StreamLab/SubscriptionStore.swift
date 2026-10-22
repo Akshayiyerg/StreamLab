@@ -184,7 +184,7 @@ final class SubscriptionStore {
             options.insert(.winBackOffer(offer))
         }
         
-        let result = try await product.purchase()
+        let result = try await product.purchase(options: options)
         return try await process(result)
     }
     
