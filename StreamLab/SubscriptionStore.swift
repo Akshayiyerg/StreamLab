@@ -19,6 +19,11 @@ struct SubscriptionDetails {
     let isFreeTrial: Bool
 }
 
+struct WinBackOffer {
+    let product: Product
+    let offer: Product.SubscriptionOffer
+}
+
 enum PurchaseOutcome {
     case success
     case cancelled
@@ -37,6 +42,7 @@ final class SubscriptionStore {
     
     private(set) var details: SubscriptionDetails?
     private(set) var hasLoadedEntitlements = false
+    private(set) var winBackOffer: WinBackOffer?
     
     var isSubscribed: Bool {
         activeProductID != nil
@@ -56,6 +62,7 @@ final class SubscriptionStore {
     
     @ObservationIgnored private var updatesTask: Task<Void, Never>?
     @ObservationIgnored private var statusTask: Task<Void, Never>?
+    @ObservationIgnored private var expiryTask: Task<Void, Never>?
     
     init() {
         updatesTask = Task { [weak self] in
@@ -98,6 +105,7 @@ final class SubscriptionStore {
         await refreshTrialEligibility()
         
         await refreshDetails()
+        scheduleExpiryRefresh(at: details?.expirationDate)
         hasLoadedEntitlements = true
     }
     
@@ -110,8 +118,11 @@ final class SubscriptionStore {
         guard let subscription = products.first?.subscription,
               let statuses = try? await subscription.status else {
             details = nil
+            winBackOffer = nil
             return
         }
+        
+        winBackOffer = findWinBackOffer(in: statuses)
         
         let activeStates: [Product.SubscriptionInfo.RenewalState] = [.subscribed, .inGracePeriod, .inBillingRetryPeriod]
         
@@ -132,12 +143,47 @@ final class SubscriptionStore {
         )
     }
     
+    private func scheduleExpiryRefresh(at date: Date?) {
+        expiryTask?.cancel()
+        guard let date, date > .now else { return }
+        
+        expiryTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(date.timeIntervalSinceNow + 1))
+            guard !Task.isCancelled else { return }
+            await self?.refreshEntitlements()
+        }
+    }
+    
+    private func findWinBackOffer(in statuses: [Product.SubscriptionInfo.Status]) -> WinBackOffer? {
+        let activeStates: [Product.SubscriptionInfo.RenewalState] = [.subscribed, .inGracePeriod, .inBillingRetryPeriod]
+        guard !statuses.contains(where: { activeStates.contains($0.state) }) else { return nil }
+        
+        for status in statuses where status.state == .expired {
+            guard let renewalInfo = try? checkVerified(status.renewalInfo) else { continue }
+            
+            for offerID in renewalInfo.eligibleWinBackOfferIDs {
+                for product in products {
+                    if let offer = product.subscription?.winBackOffers.first(where: { $0.id == offerID }) {
+                        return WinBackOffer(product: product, offer: offer)
+                    }
+                }
+            }
+        }
+        
+        return nil
+    }
+    
     func restore() async throws {
         try await AppStore.sync()
         await refreshEntitlements()
     }
     
-    func purchase(_ product: Product) async throws -> PurchaseOutcome {
+    func purchase(_ product: Product, winBackOffer offer: Product.SubscriptionOffer? = nil) async throws -> PurchaseOutcome {
+        var options: Set<Product.PurchaseOption> = []
+        if let offer {
+            options.insert(.winBackOffer(offer))
+        }
+        
         let result = try await product.purchase()
         return try await process(result)
     }
