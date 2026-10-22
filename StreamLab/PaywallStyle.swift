@@ -24,12 +24,20 @@ enum PaywallStyle: String, CaseIterable, Identifiable {
 }
 
 struct PaywallSheet: View {
+    @Environment(SubscriptionStore.self) private var store
     @AppStorage(PaywallStyle.storageKey) private var style = PaywallStyle.custom
+    @State private var showAllPlans = false
     
     var body: some View {
         switch style {
         case .custom:
-            PaywallView()
+            if let winBack = store.winBackOffer, !showAllPlans {
+                WinBackOfferView(winBack: winBack) {
+                    showAllPlans = true
+                }
+            } else {
+                PaywallView()
+            }
         case .storeKit:
             StoreKitPaywallView()
         }

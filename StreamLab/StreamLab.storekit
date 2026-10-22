@@ -90,7 +90,17 @@
           "subscriptionGroupID" : "4CD3DB80",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
-
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "displayPrice" : "2.99",
+              "internalID" : "26E95A56",
+              "isEligible" : true,
+              "numberOfPeriods" : 1,
+              "offerID" : "winback.monthly.first",
+              "paymentMode" : "payAsYouGo",
+              "referenceName" : "Monthly Win-Back",
+              "subscriptionPeriod" : "P1M"
+            }
           ]
         },
         {
