@@ -72,7 +72,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../StreamLab/StreamLab.storekit">
+         identifier = "../../StreamLab/Resources/StreamLab.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

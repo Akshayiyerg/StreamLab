@@ -27,20 +27,20 @@ Free titles play for everyone. Premium titles unlock with a StreamLab Premium su
 
 | Area | What the app does | Where |
 |---|---|---|
-| Products | Loads both plans with `Product.products(for:)`, sorted by price, using StoreKit's localized `displayPrice` | [`SubscriptionStore.swift`](StreamLab/SubscriptionStore.swift) |
-| Purchase | Handles success, cancelled and pending results, verifies every transaction, and calls `finish()` after delivering | [`SubscriptionStore.swift`](StreamLab/SubscriptionStore.swift) |
-| Entitlements | Access comes only from `Transaction.currentEntitlements`. Nothing about the subscription is stored by the app | [`SubscriptionStore.swift`](StreamLab/SubscriptionStore.swift) |
-| Renewals and refunds | A `Transaction.updates` listener starts at launch; `Product.SubscriptionInfo.Status.updates` and a scheduled refresh at the expiry date cover status changes | [`SubscriptionStore.swift`](StreamLab/SubscriptionStore.swift) |
-| Free trial | 7-day free trial on Monthly, shown only when `isEligibleForIntroOffer` is true | [`PaywallView.swift`](StreamLab/PaywallView.swift) |
-| Two paywalls | A custom SwiftUI paywall and Apple's `SubscriptionStoreView`, switchable in a debug-only setting. Both use one purchase pipeline | [`PaywallView.swift`](StreamLab/PaywallView.swift), [`StoreKitPaywallView.swift`](StreamLab/StoreKitPaywallView.swift), [`PaywallStyle.swift`](StreamLab/PaywallStyle.swift) |
-| Win-back offers | Lapsed subscribers see a $2.99 first month back, using `eligibleWinBackOfferIDs` and the `.winBackOffer` purchase option (iOS 18) | [`WinBackOfferView.swift`](StreamLab/WinBackOfferView.swift) |
-| Account | Plan, trial, renewal or cancellation date, plan switches, billing problems, Manage Subscription (`manageSubscriptionsSheet`), Restore Purchases (`AppStore.sync()`), Redeem Offer Code | [`AccountView.swift`](StreamLab/AccountView.swift) |
-| Gating | One access rule, `canWatch(isPremium:)`, used by the list, detail screen and player. The player closes if access is revoked mid-playback | [`VideoDetailView.swift`](StreamLab/VideoDetailView.swift), [`PlayerView.swift`](StreamLab/PlayerView.swift) |
-| Catalogue | Fetched from [`catalog.json`](catalog.json) with `URLSession` and `Codable`, cached in SwiftData so it works offline | [`CatalogRepository.swift`](StreamLab/CatalogRepository.swift) |
+| Products | Loads both plans with `Product.products(for:)`, sorted by price, using StoreKit's localized `displayPrice` | [`SubscriptionStore.swift`](StreamLab/Store/SubscriptionStore.swift) |
+| Purchase | Handles success, cancelled and pending results, verifies every transaction, and calls `finish()` after delivering | [`SubscriptionStore.swift`](StreamLab/Store/SubscriptionStore.swift) |
+| Entitlements | Access comes only from `Transaction.currentEntitlements`. Nothing about the subscription is stored by the app | [`SubscriptionStore.swift`](StreamLab/Store/SubscriptionStore.swift) |
+| Renewals and refunds | A `Transaction.updates` listener starts at launch; `Product.SubscriptionInfo.Status.updates` and a scheduled refresh at the expiry date cover status changes | [`SubscriptionStore.swift`](StreamLab/Store/SubscriptionStore.swift) |
+| Free trial | 7-day free trial on Monthly, shown only when `isEligibleForIntroOffer` is true | [`PaywallView.swift`](StreamLab/Features/Paywall/PaywallView.swift) |
+| Two paywalls | A custom SwiftUI paywall and Apple's `SubscriptionStoreView`, switchable in a debug-only setting. Both use one purchase pipeline | [`PaywallView.swift`](StreamLab/Features/Paywall/PaywallView.swift), [`StoreKitPaywallView.swift`](StreamLab/Features/Paywall/StoreKitPaywallView.swift), [`PaywallStyle.swift`](StreamLab/Features/Paywall/PaywallStyle.swift) |
+| Win-back offers | Lapsed subscribers see a $2.99 first month back, using `eligibleWinBackOfferIDs` and the `.winBackOffer` purchase option (iOS 18) | [`WinBackOfferView.swift`](StreamLab/Features/Paywall/WinBackOfferView.swift) |
+| Account | Plan, trial, renewal or cancellation date, plan switches, billing problems, Manage Subscription (`manageSubscriptionsSheet`), Restore Purchases (`AppStore.sync()`), Redeem Offer Code | [`AccountView.swift`](StreamLab/Features/Account/AccountView.swift) |
+| Gating | One access rule, `canWatch(isPremium:)`, used by the list, detail screen and player. The player closes if access is revoked mid-playback | [`VideoDetailView.swift`](StreamLab/Features/Home/VideoDetailView.swift), [`PlayerView.swift`](StreamLab/Features/Player/PlayerView.swift) |
+| Catalogue | Fetched from [`catalog.json`](catalog.json) with `URLSession` and `Codable`, cached in SwiftData so it works offline | [`CatalogRepository.swift`](StreamLab/Catalog/CatalogRepository.swift) |
 
 ## Plans
 
-Defined in [`StreamLab.storekit`](StreamLab/StreamLab.storekit), one subscription group, **StreamLab Premium**:
+Defined in [`StreamLab.storekit`](StreamLab/Resources/StreamLab.storekit), one subscription group, **StreamLab Premium**:
 
 | Plan | Product ID | Price | Offers |
 |---|---|---|---|
@@ -74,6 +74,23 @@ StreamLabApp
       ├─ HomeView ─ VideoDetailView ─ PlayerView
       │                 └─ PaywallSheet → PaywallView / StoreKitPaywallView / WinBackOfferView
       └─ AccountView
+```
+
+### Project structure
+
+```
+StreamLab/
+├─ App/                 StreamLabApp, RootView (tabs)
+├─ Store/               SubscriptionStore, ProductID, Product+Paywall helpers
+├─ Catalog/             Video (API model), CachedVideo (SwiftData), CatalogService, CatalogRepository
+├─ Features/
+│  ├─ Home/             HomeView, VideoDetailView, PosterView
+│  ├─ Player/           PlayerView
+│  ├─ Paywall/          PaywallView, StoreKitPaywallView, WinBackOfferView, PaywallStyle
+│  └─ Account/          AccountView
+├─ Shared/              AppLinks (Terms and Privacy URLs)
+└─ Resources/           Assets, StreamLab.storekit
+StreamLabTests/         SubscriptionStoreTests (SKTestSession)
 ```
 
 - **One store object** owns StoreKit. Views read its state and never call StoreKit directly.
