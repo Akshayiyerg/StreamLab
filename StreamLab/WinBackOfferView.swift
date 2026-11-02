@@ -72,8 +72,8 @@ struct WinBackOfferView: View {
                     .multilineTextAlignment(.center)
                 
                 HStack(spacing: 20) {
-                    Link("Terms of Use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
-                    Link("Privacy Policy", destination: URL(string: "https://github.com/Akshayiyerg/StreamLab/blob/main/PRIVACY.md")!)
+                    Link("Terms of Use", destination: AppLinks.termsOfUse)
+                    Link("Privacy Policy", destination: AppLinks.privacyPolicy)
                 }
                 .font(.footnote)
             }

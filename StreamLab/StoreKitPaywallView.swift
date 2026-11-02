@@ -34,10 +34,10 @@ struct StoreKitPaywallView: View {
         .storeButton(.visible, for: .restorePurchases)
         .storeButton(.visible, for: .cancellation)
         .storeButton(.visible, for: .policies)
-        .subscriptionStorePolicyDestination(url: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!,
+        .subscriptionStorePolicyDestination(url: AppLinks.termsOfUse,
         for: .termsOfService
         )
-        .subscriptionStorePolicyDestination(url: URL(string: "https://github.com/Akshayiyerg/StreamLab/blob/main/PRIVACY.md")!, for: .privacyPolicy
+        .subscriptionStorePolicyDestination(url: AppLinks.privacyPolicy, for: .privacyPolicy
         )
         .onInAppPurchaseCompletion { _, result in
             switch result {

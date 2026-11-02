@@ -64,7 +64,7 @@ struct PaywallView: View {
             
             VStack(alignment: .leading, spacing: 8) {
                 Label("Every title in the catalogue", systemImage: "film.stack")
-                Label("New premium releases", systemImage: "sparkles")
+                Label("Watch on iPhone and iPad", systemImage: "ipad.and.iphone")
                 Label("Cancel anytime", systemImage: "checkmark.circle")
             }
         }
@@ -72,6 +72,20 @@ struct PaywallView: View {
     
     private var plans: some View {
         VStack(spacing: 12) {
+            if store.products.isEmpty {
+                ContentUnavailableView {
+                    Label("Plans unavailable", systemImage: "exclamationmark.icloud")
+                } description: {
+                    Text("We couldn't load the subscription options. Check your connection and try again.")
+                } actions: {
+                    Button("Try Again") {
+                        Task {
+                            await store.loadProducts()
+                            await store.refreshEntitlements()
+                        }
+                    }
+                }
+            }
             if let annual {
                 PlanCard(
                     product: annual,
@@ -126,8 +140,8 @@ struct PaywallView: View {
                 Button("Restore Purchases") {
                     Task { await restore() }
                 }
-                Link("Terms of Use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
-                Link("Privacy Policy", destination: URL(string: "https://github.com/Akshayiyerg/StreamLab/blob/main/PRIVACY.md")!)
+                Link("Terms of Use", destination: AppLinks.termsOfUse)
+                Link("Privacy Policy", destination: AppLinks.privacyPolicy)
             }
             .font(.footnote)
         }
