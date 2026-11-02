@@ -42,57 +42,54 @@ struct WinBackOfferView: View {
                     .padding()
                     .frame(maxWidth: .infinity)
                     .background(.background.secondary, in: .rect(cornerRadius: 12))
+
+                    Button {
+                        Task { await claim() }
+                    } label: {
+                        Group {
+                            if isPurchasing {
+                                ProgressView()
+                            } else {
+                                Text("Claim offer")
+                                    .bold()
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(isPurchasing)
+
+                    Button("See all plans", action: onShowAllPlans)
+
+                    Text("After the offer, your subscription renews automatically at \(winBack.product.pricePerPeriod) unless cancelled at least 24 hours before the end of the current period. Manage or cancel anytime in your Apple Account settings.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+
+                    HStack(spacing: 20) {
+                        Link("Terms of Use", destination: AppLinks.termsOfUse)
+                        Link("Privacy Policy", destination: AppLinks.privacyPolicy)
+                    }
+                    .font(.footnote)
                 }
                 .padding()
-                .frame(maxWidth: .infinity)
-                .background(.background.secondary, in: .rect(cornerRadius: 12))
-                
-                Button {
-                    Task { await claim() }
-                } label: {
-                    Group {
-                        if isPurchasing {
-                            ProgressView()
-                        } else {
-                            Text("Claim offer")
-                                .bold()
-                        }
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close", systemImage: "xmark") {
+                        dismiss()
                     }
-                    .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(isPurchasing)
-                
-                Button("See all plans", action: onShowAllPlans)
-                
-                Text("After the offer, your subscription renews automatically at \(winBack.product.pricePerPeriod) unless cancelled at least 24 hours before the end of the current period. Manage or cancel anytime in your Apple Account settings.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                
-                HStack(spacing: 20) {
-                    Link("Terms of Use", destination: AppLinks.termsOfUse)
-                    Link("Privacy Policy", destination: AppLinks.privacyPolicy)
-                }
-                .font(.footnote)
-            }
-            .padding()
-        }
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Close", systemImage: "xmark") {
-                    dismiss()
                 }
             }
-        }
-        .alert("Purchase failed", isPresented: Binding(
-            get: { errorMessage != nil },
-            set: { if !$0 { errorMessage = nil } }
-        )) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(errorMessage ?? "")
+            .alert("Purchase failed", isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { if !$0 { errorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(errorMessage ?? "")
+            }
         }
     }
     
