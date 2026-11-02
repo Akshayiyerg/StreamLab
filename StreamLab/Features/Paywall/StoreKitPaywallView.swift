@@ -34,11 +34,8 @@ struct StoreKitPaywallView: View {
         .storeButton(.visible, for: .restorePurchases)
         .storeButton(.visible, for: .cancellation)
         .storeButton(.visible, for: .policies)
-        .subscriptionStorePolicyDestination(url: AppLinks.termsOfUse,
-        for: .termsOfService
-        )
-        .subscriptionStorePolicyDestination(url: AppLinks.privacyPolicy, for: .privacyPolicy
-        )
+        .subscriptionStorePolicyDestination(url: AppLinks.termsOfUse, for: .termsOfService)
+        .subscriptionStorePolicyDestination(url: AppLinks.privacyPolicy, for: .privacyPolicy)
         .onInAppPurchaseCompletion { _, result in
             switch result {
             case .success(let purchaseResult):

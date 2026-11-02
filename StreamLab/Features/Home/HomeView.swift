@@ -87,7 +87,7 @@ struct HomeView: View {
     private func load() async {
         isLoading = true
         
-        defer { isLoading = false}
+        defer { isLoading = false }
              
         do {
             try await repository.refresh(into: modelContext)

@@ -8,6 +8,7 @@
 
 import StoreKit
 import Observation
+import os
 
 
 struct SubscriptionDetails {
@@ -60,6 +61,8 @@ final class SubscriptionStore {
         !isPremium || isSubscribed
     }
     
+    private static let logger = Logger(subsystem: "com.akshay.StreamLab", category: "StoreKit")
+
     @ObservationIgnored private var updatesTask: Task<Void, Never>?
     @ObservationIgnored private var statusTask: Task<Void, Never>?
     @ObservationIgnored private var expiryTask: Task<Void, Never>?
@@ -204,10 +207,10 @@ final class SubscriptionStore {
         }
     }
     
-    private func handle(_ result:VerificationResult<Transaction>) async {
+    private func handle(_ result: VerificationResult<Transaction>) async {
         guard let transaction = try? checkVerified(result) else { return }
         
-        print("Transaction update:", transaction.productID, "revoked:", transaction.revocationDate != nil)
+        Self.logger.info("Transaction update: \(transaction.productID, privacy: .public), revoked: \(transaction.revocationDate != nil)")
         
         await refreshEntitlements()
         await transaction.finish()
